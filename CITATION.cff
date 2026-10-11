@@ -1,14 +1,6 @@
 cff-version: 1.2.0
-message: "If you use this code, please cite the paper."
+message: "Authors withheld for double-anonymized review. Citation details will be added on publication."
 title: "Leaderboards and R² Rank Models for a Deployment They Do Not See: code and result files"
 authors:
-  - family-names: Han
-    given-names: Henry
-  - family-names: Xie
-    given-names: Juanying
-  - family-names: Li
-    given-names: Diane
-  - family-names: Han
-    given-names: Fei
+  - name: "Anonymous authors"
 license: MIT
-date-released: 2026-10-11
