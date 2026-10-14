@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.colors import ListedColormap
-# the house style of the group's other submissions
+# figure style
 plt.rcParams.update({'font.size':9,'axes.titlesize':9,'axes.labelsize':9,
                      'xtick.labelsize':8,'ytick.labelsize':8,'legend.fontsize':7.5,
                      'axes.spines.top':False,'axes.spines.right':False,

@@ -17,7 +17,7 @@ R = ROOT / 'results' / 'universal'
 FIG = ROOT.parent / 'universal_metric' if (ROOT.parent / 'universal_metric').exists() else ROOT / 'figures'
 FIG.mkdir(exist_ok=True)
 
-# The house style of the group's other submissions: default colour cycle, no top or
+# Figure style: default colour cycle, no top or
 # right spine, a titled panel rather than a lettered one, and nothing else.
 plt.rcParams.update({
     'font.size': 9, 'axes.titlesize': 9, 'axes.labelsize': 9,
@@ -32,7 +32,7 @@ _LET = {}
 
 
 def panel(ax, letter, title=''):
-    """Title the panel the way the group's other papers do: "(a) what it shows"."""
+    """Title each panel in one style: "(a) what it shows"."""
     ax.set_title(f'({letter}) {title}'.rstrip(), fontsize=9)
 
 
@@ -97,8 +97,9 @@ def fig1(ax=None, letters='abc', only='abc'):
     b = slot.get('b')
     if b is not None:
         b.barh(np.arange(len(per)), per.values, color=INK, height=.74)
-        b.axvline(per.mean(), color=HOT, lw=1.1, ls='--')
-        b.text(per.mean() + .8, .4, f'mean {per.mean():.1f}%', color=HOT,
+        pooled = 100 * sc.inverted.mean()
+        b.axvline(pooled, color=HOT, lw=1.1, ls='--')
+        b.text(pooled + .8, .4, f'all comparisons {pooled:.1f}%', color=HOT,
                fontsize=7.5, va='bottom')
         b.set_yticks([]); b.set_ylim(-.8, len(per) - .2)
         b.set_xlabel('pairs whose ordering reverses (%)')
@@ -152,6 +153,7 @@ def fig2():
         a.axvline(0, color=INK, lw=.8)
         a.set_yticks([]); a.set_ylim(-1, len(recs))
         a.set_xlabel('$\\mathbb{E}[\\ell_f-\\ell_g]$')
+        a.set_xticks([-.05, 0, .05, .10])
         panel(a, 'ab'[j], ['accuracy, 50:1 cost', 'balanced accuracy, 20:1 cost'][j])
         a.text(.02, .97, f'{nrev} of {len(recs)} reverse', transform=a.transAxes,
                fontsize=8, va='top', color=INK)
@@ -190,7 +192,7 @@ def fig3():
     lim = [min(np.quantile(p.regret, .01), np.quantile(p.bound, .01)) * .5,
            np.quantile(p.bound, .995) * 2.0]
     b.plot(lim, lim, color=HOT, lw=1.1)
-    b.text(lim[1] * .10, lim[1] * .22, 'bound $=$ regret', color=HOT,
+    b.text(lim[0] * 40, lim[0] * 95, 'bound $=$ regret', color=HOT,
            fontsize=7.5, rotation=41, ha='center')
     b.set_xscale('log'); b.set_yscale('log'); b.set_xlim(lim); b.set_ylim(lim)
     med = float(np.median(p.bound / p.regret))

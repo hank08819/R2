@@ -8,7 +8,7 @@ ms = pd.read_csv(R / 'method_summary.csv', index_col=0)['value']
 st = pd.read_csv(R / 'signed_top.csv'); fr = pd.read_csv(R / 'frontier.csv'); rsg = pd.read_csv(R / 'rr_signed.csv')
 rsq = rsg.groupby(pd.qcut(rsg.sd_r, 4, duplicates='drop'), observed=True)[['rr_r2', 'rr_rule']].mean() * 100
 import matplotlib.pyplot as plt
-# the house style of the group's other submissions
+# figure style
 plt.rcParams.update({'font.size':9,'axes.titlesize':9,'axes.labelsize':9,
                      'xtick.labelsize':8,'ytick.labelsize':8,'legend.fontsize':7.5,
                      'axes.spines.top':False,'axes.spines.right':False,
