@@ -14,9 +14,11 @@ R = ROOT / 'results' / 'universal'
 import re
 # The manuscript sits beside this tree in the working copy and one level up in the
 # released package, so take the first directory that holds it.
-P = next((d for d in (ROOT.parent / 'universal_metric', ROOT / 'paper', ROOT.parent, ROOT)
-          if (d / 'NMI_V9.tex').exists()), ROOT.parent / 'universal_metric')
-_src = [f for f in ('NMI_V9.tex', 'NMI_V9_SI.tex', 'main.tex', 'fig1.tex', 'table_cross_domain.tex')
+# The named copy (NMI_V9) and the anonymized copy (NMI_V9_anon) carry the same numbers.
+_PAIRS = [('NMI_V9.tex', 'NMI_V9_SI.tex'), ('NMI_V9_anon.tex', 'NMI_V9_SI_anon.tex')]
+P, _MAIN = next(((d, m) for d in (ROOT.parent / 'universal_metric', ROOT / 'paper', ROOT.parent, ROOT)
+                 for m in _PAIRS if (d / m[0]).exists()), (ROOT.parent / 'universal_metric', _PAIRS[0]))
+_src = [f for f in (*_MAIN, 'main.tex', 'fig1.tex', 'table_cross_domain.tex')
         if (P / f).exists()]
 _raw = ''.join((P / f).read_text() for f in _src)
 # Compare on whitespace-normalised text, so a claim is checked for what it says
@@ -476,7 +478,7 @@ C = [
 LEGACY = ['LLM cond rev', 'LLM range', 'LLM range hi', 'LLM regret hi', 'LLM regret lo', 'LLM resolves', 'LLM zero of eight', 'MAPE relative', 'MAPE top decile', 'NMI at 1.99', 'NMI factor five', 'NMI limit ratio', 'NMI reversals', 'NMI slope', 'NMI threshold', 'R2 tight', 'R2 wide', 'RR one in ten', 'RR p95', 'RR q3', 'RR quartile p90', 'ball counts', 'both decisive', 'conditional rev', 'crowd obs llm', 'crowd pred reg', 'datasets affected', 'diabetes decile', 'grid rho .6 tight', 'matched criterion', 'matched mismatch', 'option range', 'option row', 'option widest', 'panel narrowest', 'panel pairs', 'panel widest', 'per-dataset median', 'per-dataset range', 'quintile high', 'quintile low', 'quintile low sd', 'regret draws', 'rev by n high', 'rev by n low', 'selection count', 'selection wrong', 'spearman scale', 'suite pairs', 'suite reversal', 'table pairs', 'unresolved']
 C = [c for c in C if c[0] not in LEGACY]
 # the paper and its Supplementary Information are the only text audited
-tex = norm(''.join((P / f).read_text() for f in ('NMI_V9.tex', 'NMI_V9_SI.tex') if (P / f).exists()))
+tex = norm(''.join((P / f).read_text() for f in _MAIN if (P / f).exists()))
 
 # the audit's own size, as the paper states it in digits (Code availability) and in words
 _ones = 'zero one two three four five six seven eight nine'.split()
