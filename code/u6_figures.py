@@ -199,7 +199,7 @@ def fig3():
     b.text(.97, .04, f'no violation in {len(p):,} draws\nmedian slack $\\times${med:.0f}',
            transform=b.transAxes, ha='right', va='bottom', fontsize=7.5, color=INK)
     b.set_xlabel('$\\Delta(\\mathcal{P})\\,\\mathrm{sd}_\\mu(r)$, selection bound')
-    b.set_ylabel('realised regret')
+    b.set_ylabel('realized regret')
     panel(b, 'b', 'the selection bound holds')
     save(fig, 'fig3_theory')
 
@@ -211,7 +211,8 @@ def fig4():
     fig, ax = plt.subplots(1, 2, figsize=(7.4, 3.4), gridspec_kw=dict(wspace=.32))
     a = ax[0]
     for c, (ds, g) in zip([INK, COOL], sw.groupby('dataset')):
-        a.plot(g.sd_r, g.rel_med, 'o-', color=c, ms=3.4, mfc='white', mew=.9, label=ds)
+        a.plot(g.sd_r, g.rel_med, 'o-', color=c, ms=3.4, mfc='white', mew=.9,
+               label={'sick': 'thyroid'}.get(ds, ds))
     a.axhline(.10, color=HOT, lw=1.0, ls='--')
     a.axvspan(cd.sd_r.min(), cd.sd_r.max(), color=GREY, alpha=.16, lw=0)
     a.set_ylim(.05, 1.6)
@@ -220,7 +221,7 @@ def fig4():
     a.text(np.sqrt(cd.sd_r.min() * cd.sd_r.max()), 1.25,
            'every setting in Table 1', color='#4a4a4a', fontsize=7.5, ha='center')
     a.set_xscale('log'); a.set_yscale('log')
-    a.set_xlabel('$\\mathrm{sd}_\\mu(r)$'); a.set_ylabel('$|R_2|\\,/\\,|$first order$|$')
+    a.set_xlabel('$\\mathrm{sd}_\\mu(r)$'); a.set_ylabel('$|\\omega_2|\\,/\\,|$first order$|$')
     a.legend(frameon=False, handlelength=1.6)
     panel(a, 'a', 'the remainder grows with the mismatch')
 
@@ -283,12 +284,12 @@ def fig5(ax=None):
 
 
 def fig11():
-    """Figure 4 of the paper: what a wrong choice costs, and how far a benchmark settles."""
+    """Figure 4 of the paper up to V7; make_fig4.py draws it now, from the same files."""
     fig, ax = plt.subplots(2, 2, figsize=(7.4, 6.0),
                            gridspec_kw=dict(wspace=.34, hspace=.52))
     fig5(ax[0])
     fig9(ax[1], letters='cd')
-    save(fig, 'fig_cost_crowding')
+    save(fig, 'fig11_cost_crowding_v7')
 
 
 # ============================================================ Figure 6 ===
@@ -364,7 +365,7 @@ def fig7():
                    fontsize=7.5, color=c, ha='left' if dx[0] > 0 else 'right')
     a.set_xlabel('benchmark risk $\\mathbb{E}_\\mu[\\ell_f]$ (shifted)')
     a.set_ylabel('worst-case regret $\\mathcal{W}_\\kappa(f)$')
-    a.legend(frameon=False, handlelength=1.2, loc='upper right')
+    a.legend(frameon=False, handlelength=1.2, loc='center right')
     panel(a, 'a', 'one problem in two objectives')
 
     b = ax[1]
@@ -443,7 +444,7 @@ def fig9(ax=None, letters='ab'):
         g = g.sort_values('K')
         sl = np.polyfit(np.log(g.K), np.log(g.kstar), 1)
         a.plot(g.K, g.kstar, 'o-', color=COL[s], ms=4, mfc='white', mew=1,
-               label=f'{s} (slope ${sl[0]:.2f}$)')
+               label=f"{ {'language models': 'Open LLM Leaderboard'}.get(s, s)} (slope ${sl[0]:.2f}$)")
         xs = np.geomspace(g.K.min(), g.K.max(), 30)
         a.plot(xs, np.exp(np.polyval(sl, np.log(xs))), color=COL[s], lw=.8, ls=':')
     a.set_xscale('log'); a.set_yscale('log')
@@ -468,7 +469,7 @@ def fig9(ax=None, letters='ab'):
     b.bar(x + w / 2, [obs[s] for s in pred], w, color=INK, label='observed in $K$',
           yerr=err, capsize=2.5, error_kw=dict(lw=.8, ecolor='#4a4a4a'))
     b.axhline(0, color=INK, lw=.7)
-    b.set_xticks(x); b.set_xticklabels(['regression\nsuite', 'language\nmodels'], fontsize=8)
+    b.set_xticks(x); b.set_xticklabels(['regression\nsuite', 'Open LLM\nLeaderboard'], fontsize=8)
     b.set_ylabel('slope of $\\log\\kappa^{\\star}$ on $\\log K$')
     lo_ = min(iv.loc[f'crowding slope, {s}', 'lo'] for s in pred)
     b.set_ylim(lo_ - .1, 0.24)
@@ -545,13 +546,13 @@ def fig10(ax=None, letters='ab'):
 
 
 def fig12():
-    """Figure 1 of the paper: the leaderboard and the suite, side by side."""
+    """Figure 1 of the paper up to V6; make_fig1.py draws it now, from the same files."""
     fig, ax = plt.subplots(2, 2, figsize=(7.6, 6.4),
                            gridspec_kw=dict(wspace=.34, hspace=.52,
                                             width_ratios=[1.12, 1]))
     fig10(ax[0], letters='ab')
     fig1(ax[1], letters='cd', only='bc')
-    save(fig, 'fig_two_benchmarks')
+    save(fig, 'fig12_two_benchmarks_v6')
 
 
 def fig13():

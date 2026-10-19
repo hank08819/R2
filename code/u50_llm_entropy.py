@@ -1,7 +1,7 @@
 """u50_llm_entropy.py -- how many directions the leaderboard's candidate set exposes.
 
-Definition 1 reads a spectrum as an effective number of directions.  Applied to the
-centred loss matrix of the 77 models, it says how much of the 39-dimensional space
+Data entropy reads a spectrum as an effective number of directions.  Applied to the
+matrix whose row space is H_P (Proposition 1), it says how much of the 38-dimensional space
 the leaderboard actually uses, which direction carries most of it, and how far the
 eight deployment measures lie from that direction.
 
@@ -38,18 +38,20 @@ L = 1.0 - S.values                       # per-task error, the per-instance scor
 G = d.drop_duplicates('task').set_index('task')['group']
 N = d.drop_duplicates('task').set_index('task')['n'].astype(float).loc[tasks].values
 
-# Definition 1: centre by model, standardise by instance, read the spectrum.
-D = L - L.mean(0, keepdims=True)
-D = D / (D.std(0, keepdims=True) + 1e-12)
+# The matrix whose row space is H_P in the mu inner product (Proposition 1): losses
+# centred over subtasks under the leaderboard's own measure mu, then across models,
+# scaled by sqrt(mu).  No per-subtask standardisation, so the spectrum is that of H_P.
+gsz = G.loc[tasks].value_counts()
+mu = np.array([1.0 / (len(gsz) * gsz[G[t]]) for t in tasks]); mu /= mu.sum()
+Lt = L - (L @ mu)[:, None]
+D = (Lt - Lt.mean(0, keepdims=True)) * np.sqrt(mu)
 _, s, Vt = np.linalg.svd(D, full_matrices=False)
 s = s[s > 1e-10]
 u = s / s.sum()
 h = float(-(u * np.log2(u)).sum())
 energy = s ** 2 / (s ** 2).sum()
 
-# the leaderboard's own measure, and the eight deployments of u34
-gsz = G.loc[tasks].value_counts()
-mu = np.array([1.0 / (len(gsz) * gsz[G[t]]) for t in tasks]); mu /= mu.sum()
+# the eight deployments of u34
 DEPLOY = {'by question count': N / N.sum()}
 for g in sorted(gsz.index):
     w = np.array([1.0 if G[t] == g else 0.0 for t in tasks])
@@ -58,7 +60,7 @@ hard = (L.mean(0) >= np.quantile(L.mean(0), .75)).astype(float)
 DEPLOY['the hardest quartile of tasks'] = hard / hard.sum()
 
 v1 = Vt[0]
-cos = {k: abs(float(((nu / mu - 1) @ v1) / (np.linalg.norm(nu / mu - 1) * np.linalg.norm(v1))))
+cos = {k: abs(float((((nu / mu - 1) * np.sqrt(mu)) @ v1) / (np.linalg.norm((nu / mu - 1) * np.sqrt(mu)) * np.linalg.norm(v1))))
        for k, nu in DEPLOY.items()}
 
 # Who wins, and what the certificate settles, under the same eight deployments.

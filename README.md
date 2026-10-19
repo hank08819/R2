@@ -8,7 +8,6 @@ scripts and written to a CSV file under `results/universal/`.
 ```
 code/                    the scripts below, and certify.py one level up
 results_universal.zip    every result file the scripts write and read (one archive)
-figures/                 where the figure scripts write (run them from this folder)
 data/leaderboards/       the protocol for the four leaderboards, fixed before analysis
 paper/                   put NMI_V3.tex and NMI_V3_SI.tex here to run the audit
 ```
@@ -23,7 +22,6 @@ To check the paper against the result files, without rerunning any experiment:
 
 ```
 python3 code/u10_audit.py          # 127 numbers; exits with an error if any has drifted
-cd figures && python3 ../code/make_fig_summary.py   # likewise make_fig_dir, make_fig_proj, u6_figures
 ```
 
 Each script resolves its own path, so run them from any directory:
@@ -106,7 +104,7 @@ reads.
 | `u68_regret_test_selection.py` | the deployment regret test corrected for selection (Supplementary Note 8, Table S9): coverage, verdicts against a tolerance, the reviewer's ten-model example |
 | `u70_rule_real.py` | the direction rule on the two real shifts, given correct answers, at three correction sizes; one record against a group per end (Supplementary Note 10, Table S11). Run `census` and `beijing` |
 | `u71_fetch_leaderboards.py` | per-task scores of three further leaderboards (medical, finance, LiveBench), under the rules of `data/leaderboards/protocol.md`, fixed before any analysis |
-| `u72_leaderboards.py` | the identity, the certificate and the leader on all four leaderboards (Supplementary Note 11, Table S12) |
+| `u72_leaderboards.py` | the identity, the certificate and the leader on all four leaderboards (Supplementary Note 11, Table S13) |
 | `u73_leaderboard_regret_test.py` | the deployment regret test on the four leaderboards, tasks as the unit, with a weighted version for boards that weight tasks unequally |
 | `u66_signed_budget.py` | the bound when only a budget and signed answers are known: population check (Supplementary Note 9) |
 | `u67_signed_budget_test.py` | the same with sampling error: misstated budget, wrong answers, split halves (Supplementary Note 9) |
@@ -115,8 +113,19 @@ reads.
 | `u65_deep_learners.py` | the three added candidates: MLP, FT-Transformer, ridge on the LLM embeddings |
 | `u59_acs_real_shift.py` | census case: trained on California 2018, deployed to 52 state-years; certificate and selection error (Supplementary Note 10, Table S10) |
 | `u60_acs_spot_check.py` | census case: the regret test on a labeled spot-check of each deployment |
+| `u77_joint_cluster.py` | the selection-corrected regret test with one two-sided band, optionally resampled by cluster (day) |
+| `u78_acs_regret_joint.py` | census case rerun with the regret test from the benchmark alone under each stated weight (Supplementary Note 10, Table S12; Note 12) |
+| `u79_beijing_regret_joint.py` | Beijing case rerun with the same test, resampled by day (Supplementary Note 10, Table S12) |
 | `u61_beijing_real_shift.py` | Beijing PM2.5 case: trained on 2010-2012, deployed to each month of 2013-2014 |
 | `u62_beijing_spot_check.py` | Beijing case: labeled spot-check, multiplier bootstrap drawn per day (and per hour, for contrast) |
+| `u80_commute_prereg.py` | pre-registered census commute case (`prereg/prereg_commute.md`): certificate, regret test, spot-check (Supplementary Note 13) |
+| `u81_commute_summary.py` | its pre-registered outcomes and criterion (Supplementary Table S14) |
+| `u82_sharp_radius.py` | the sharp radius for nonnegative weights, against the radius, on the suite (Supplementary Note 14) |
+| `u84_holdout_sharp.py` | the held-out check of the main text with both radii, on the same splits (Supplementary Table S15) |
+| `u83_conditional_shift.py` | what the reweighted benchmark cannot see, and the allowance learned from other deployments (Supplementary Note 15, Table S16) |
+| `u85_weather_extract.py` | Shifts weather data cut into (climate type, month) cells, run on the lab server |
+| `u86_weather_prereg.py` | pre-registered Shifts weather case (`prereg/prereg_weather.md`), run on the lab server (x86, numpy 1.26) |
+| `u87_weather_summary.py` | its pre-registered outcomes, criterion and allowance |
 
 **3. What a benchmark can see of a deployment.**
 
@@ -188,7 +197,7 @@ cannot supply a direction.
 | `u10_audit.py` | re-derives every number in the paper from its result file |
 
 `u10_audit.py` reads the manuscript source, `NMI_V3.tex` and `NMI_V3_SI.tex`, and compares
-each figure quoted in the prose with the CSV it came from. Put the two files beside this
+each number quoted in the prose with the CSV it came from. Put the two files beside this
 README and run it last. It prints how many items agree and exits with an error if any has
 drifted.
 

@@ -139,10 +139,10 @@ def regret_test(L, w, tol=0.10, alpha=0.05, nboot=2000, seed=0):
     se = np.where(flat, 0.0, se)
     Zb = (np.random.default_rng(seed).standard_normal((nboot, n)) @ Psi.T) / n / np.where(flat, 1.0, se)
     Zb[:, flat] = 0.0
-    c = float(np.quantile(Zb.max(1), 1 - alpha)); c2 = float(np.quantile(np.abs(Zb).max(1), 1 - alpha))
+    c2 = float(np.quantile(np.abs(Zb).max(1), 1 - alpha))        # the 1 - alpha quantile of the largest |deviation|
     P = len(I); row = I == f
-    up = max(0.0, float((theta + c * se[:P])[row].max())); lo = float((theta - c2 * se[:P])[row].max())
-    m_lo, m_up = m[f] - c * se[P + f], m[f] + c2 * se[P + f]
+    up = max(0.0, float((theta + c2 * se[:P])[row].max())); lo = float((theta - c2 * se[:P])[row].max())   # one two-sided band for both verdicts
+    m_lo, m_up = m[f] - c2 * se[P + f], m[f] + c2 * se[P + f]
     rr_ucb = up / m_lo if m_lo > 0 else np.inf
     verdict = 'certified' if rr_ucb <= tol else ('exceeds' if lo > tol * m_up else 'undetermined')
     return dict(verdict=verdict, tol=tol, rr_hat=max(0.0, float(theta[row].max())) / m[f],

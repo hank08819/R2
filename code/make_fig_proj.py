@@ -35,23 +35,34 @@ R = np.stack([c[k]+v[k][0]*X+v[k][1]*Y for k in (1,2,3)])
 win = R.argmin(0)
 b.imshow(win,origin='lower',extent=[-1.3,1.3,-1.3,1.3],
          cmap=ListedColormap(['#e9eff7','#f6ecec','#eef4ee']),interpolation='nearest',aspect='equal')
-b.contour(X,Y,R[0]-R[1],levels=[0],colors=INK,linewidths=0.9)
-b.contour(X,Y,R[0]-R[2],levels=[0],colors=INK,linewidths=0.9)
-b.contour(X,Y,R[1]-R[2],levels=[0],colors=INK,linewidths=0.9)
+# boundaries: only the active part of each tie line, where the two tied models are both best
+for (i1,i2) in [(0,1),(0,2),(1,2)]:
+    other=[k for k in range(3) if k not in (i1,i2)][0]
+    tie=R[i1]-R[i2]; active=np.where(R[[i1,i2]].min(0)<=R[other], tie, np.nan)
+    b.contour(X,Y,active,levels=[0],colors=INK,linewidths=0.9)
 b.scatter([0],[0],s=26,color=INK,zorder=6)
 b.text(0.16,-0.10,'benchmark\n$P(r-1)=0$',fontsize=8.4,color=INK,va='top')
 tip=np.array([-0.45,1.05])
 b.add_patch(FancyArrowPatch((0,0),tuple(tip),arrowstyle='-|>',mutation_scale=9,color=RED,lw=1.6,zorder=7))
-b.text(tip[0]+0.10,tip[1]-0.10,'intended deployment',color=RED,fontsize=8.8,ha='left')
-# kappa*: distance from the benchmark to the nearest face
-d12=(v[1]-v[2]); d13=(v[1]-v[3])
-k=min(abs(c[2]-c[1])/np.linalg.norm(d12), abs(c[3]-c[1])/np.linalg.norm(d13))
-n=d13/np.linalg.norm(d13); foot=-n*(c[1]-c[3])/np.linalg.norm(d13)
-b.plot([0,foot[0]],[0,foot[1]],color=GREY,lw=1.0,ls=(0,(3,2)),zorder=6)
-b.text(foot[0]*0.5-0.26,foot[1]*0.5+0.10,r'$\kappa^{\star}$',color='k',fontsize=10)
-b.text(0.70,-1.15,r'$f_{2}$ selected',fontsize=8.6,color=INK)
-b.text(-1.22,1.10,r'$f_{3}$ selected',fontsize=8.6,color=INK)
-b.text(-1.38,-0.95,'$f_{1}$ selected,\nas on the benchmark',fontsize=8.6,color=INK)
+b.text(-1.24,1.16,'stated deployment',color=RED,fontsize=8.8,ha='left')
+def risks(p): return [c[k]+v[k]@np.asarray(p) for k in (1,2,3)]
+assert int(np.argmin(risks(tip)))==1, 'the stated deployment must select f2'
+# kappa*: distance from the benchmark to the nearest selection face of f1, drawn to that face
+feet={}
+for jj in (2,3):
+    d=v[jj]-v[1]; foot=-(c[jj]-c[1])*d/(d@d)
+    r=risks(foot); assert abs(r[0]-r[jj-1])<1e-9 and r[0]<=min(r)+1e-9, 'face not active'
+    feet[jj]=foot
+jn=min(feet,key=lambda jj:np.linalg.norm(feet[jj])); foot=feet[jn]; k=float(np.linalg.norm(foot))
+b.plot([0,foot[0]],[0,foot[1]],color=INK,lw=1.0,ls=(0,(3,2)),zorder=6)
+u=foot/k; t=np.array([-u[1],u[0]]); h=0.07                      # right-angle mark at the foot
+A=foot-u*h; B=A+t*h; C=foot+t*h; b.plot([A[0],B[0],C[0]],[A[1],B[1],C[1]],color=INK,lw=0.7,zorder=6)
+b.text(0.0,0.21,r'$\kappa^{\star}$',color='k',fontsize=10,ha='center',va='center')
+# region labels, each checked against the risks at its own position
+for (x,y,kk,lab) in [(0.70,-1.15,3,r'$f_{3}$ selected'),(0.68,0.72,2,r'$f_{2}$ selected'),
+                     (-1.22,-1.00,1,'$f_{1}$ selected,\nas on the benchmark')]:
+    assert int(np.argmin(risks((x,y))))+1==kk, (lab,'is not in its region')
+    b.text(x,y,lab,fontsize=8.6,color=INK)
 b.set_xticks([]); b.set_yticks([])
 for s in b.spines.values(): s.set_color(GREY)
 b.set_title('(b) a benchmark partitions deployment space',fontsize=9)

@@ -80,9 +80,11 @@ for did in IDS:
         except Exception as e:
             print(f'  {did} seed {seed}: {type(e).__name__}', flush=True); continue
         n = len(yte); mu = np.full(n, 1 / n)
-        # H is the span of the centred loss differences; in the mu inner product
-        # that is the row space of the model-centred loss matrix scaled by sqrt(mu).
-        Lc = (L - L.mean(0, keepdims=True)) * np.sqrt(mu)
+        # H is the span of the centred loss differences (Proposition 1); in the mu
+        # inner product that is the row space of the loss matrix centred over
+        # instances under mu and across models, scaled by sqrt(mu).
+        Lt = L - (L @ mu)[:, None]
+        Lc = (Lt - Lt.mean(0, keepdims=True)) * np.sqrt(mu)
         _, s_, Vt = np.linalg.svd(Lc, full_matrices=False)
         q = np.linalg.matrix_rank(Lc); B = Vt[:q]
         u_ = s_[:q] / s_[:q].sum(); h = float(-(u_ * np.log2(u_)).sum())

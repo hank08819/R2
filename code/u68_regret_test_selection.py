@@ -8,8 +8,10 @@ percent in the limit).  The repair reads the chosen row from a band that holds f
 row at once:
     for all ordered pairs (f, g):  theta_fg <= theta_fg_hat + c se_fg,
     for all f:                     m_f      >= m_f_hat      - c se_mf,
-with one c, the 1 - alpha quantile of the multiplier bootstrap of the maximum of all
-K(K-1) + K standardized deviations.  On that event, whichever row the data select,
+with one c, the 1 - alpha quantile of the multiplier bootstrap of the largest absolute
+value of all K(K-1) + K standardized deviations: one two-sided band, so that the
+'certified' and 'exceeds' verdicts rest on the same event and the whole three-way
+verdict is wrong with probability at most alpha.  On that event, whichever row the data select,
     RR(f*) = max_g theta_f*g / m_f*  <=  max(0, max_g upper_f*g) / lower_f*  = RR_ucb,
 so the bound covers at level 1 - alpha whatever the selection rule.  The benchmark
 risk m_f = E_mu[l_f] is the population benchmark risk, estimated, not the sample's.
@@ -57,16 +59,17 @@ def regret_test_sel(L, w, alpha=ALPHA, nboot=NBOOT, rng=None, eps=EPS):
     se = np.where(flat, 0.0, se)
     Zb = (rng.standard_normal((nboot, n)) @ Psi.T) / n / np.where(flat, 1.0, se)
     Zb[:, flat] = 0.0
-    c = float(np.quantile(Zb.max(1), 1 - alpha))
+    c1 = float(np.quantile(Zb.max(1), 1 - alpha))          # one-sided, kept for the record
     # two-sided band for the 'exceeds' verdict
     c2 = float(np.quantile(np.abs(Zb).max(1), 1 - alpha))
+    c = c2                                                  # one two-sided band serves both verdicts
     P = len(I)
     up_t, lo_t = theta + c * se[:P], theta - c2 * se[:P]
     lo_m, up_m = m_hat - c * se[P:], m_hat + c2 * se[P:]
     row = I == f
     num_up = max(0.0, float(up_t[row].max())); num_lo = float(lo_t[row].max())
     rr_ucb = num_up / lo_m[f] if lo_m[f] > 0 else np.inf
-    out = dict(choice=f, crit_sel=c, rr_ucb_sel=rr_ucb, rr_lcb_sel=max(0.0, num_lo) / up_m[f])
+    out = dict(choice=f, crit_sel=c, crit_onesided=c1, rr_ucb_sel=rr_ucb, rr_lcb_sel=max(0.0, num_lo) / up_m[f])
     for e in eps:
         out[f'cert_{e}'] = int(rr_ucb <= e)
         out[f'exceed_{e}'] = int(num_lo > e * up_m[f])
